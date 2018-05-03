@@ -1,3 +1,5 @@
+A quick project to test out the usage of the City of Melbourne data API
+
 ## Parking
 
 Find out about parking signs in the city of Melbourne.
@@ -17,3 +19,9 @@ params
     latitude: str                latitude of search area
     longitude: str               longitude of search area
     radius: int                  radius of search area (metres)
+
+##### todo
+
+ - Build front end
+ - React to Date/Time of input
+ - React to disability input
