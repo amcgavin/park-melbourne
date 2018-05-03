@@ -8,7 +8,7 @@ DATASET_LOCATIONS = 'dtpv-d4pf'
 DATASET_BAYINFO = 'rzb8-bz3y'
 
 # schema for returning information to client
-format_row = v.Schema({
+format_row = v.Schema([{
     v.Required('lat'): str,
     v.Required('lon'): str,
     v.Required('bay_id'): str,
@@ -20,7 +20,7 @@ format_row = v.Schema({
         v.Optional('description5'): str,
         v.Optional('description6'): str
     }
-}, extra=v.REMOVE_EXTRA)
+}], extra=v.REMOVE_EXTRA)
 
 validate_input = v.Schema({
     v.Optional('latitude'): str,
@@ -31,9 +31,6 @@ validate_input = v.Schema({
 # default to somewhere in the Melbourne CBD
 default_latitude = '-37.8137309'
 default_longitude = '144.9642396'
-
-# extract bay_ids from a list of parking bays
-get_bay_ids = functools.partial(map, operator.itemgetter('bay_id'))
 
 
 # turn a list of dicts into an index
@@ -53,16 +50,18 @@ def find_bays(latitude=default_latitude, longitude=default_longitude, radius=200
     if not results:
         return []
     # extract all bay ids to look up their bay information
-    bay_ids = get_bay_ids(results)
+    bay_ids = map(operator.itemgetter('bay_id'), results)
 
+    # lookup bay information, and index the result
     parking_info = functools.reduce(dict_reducer, client.get(DATASET_BAYINFO, where='bayid IN (%s)' % (','.join(bay_ids)), limit=2000), dict())
 
+    # join dicts on bay_id
     for result in results:
         result.update(parking_info=parking_info.get(result.get('bay_id')))
 
     # todo: determine which day/time slot to look at
 
-    return list(map(format_row, results))
+    return format_row(list(results))
 
 
 def api_find_bays(params):
